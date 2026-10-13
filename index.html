@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESSE EVENTS</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ESSE EVENTS">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#140809">
+<link rel="apple-touch-icon" href="icona-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icona-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  html, body { margin: 0; height: 100%; background: #140809; overflow: hidden; }
+  #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #140809; opacity: 0; transition: opacity .25s ease; }
+  #app.ready { opacity: 1; }
+  #splash { position: fixed; inset: 0; display: grid; place-items: center; align-content: center; gap: 18px; color: #bfa7a1;
+    font: 600 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; letter-spacing: .14em; text-transform: uppercase; text-align: center; padding: 24px; }
+  #splash img { width: 96px; height: 96px; border-radius: 22px; }
+  #splash.off { display: none; }
+  #splash a { color: #ff4b50; }
+</style>
+</head>
+<body>
+<div id="splash"><img src="icona-192.png" alt=""><span id="msg">Caricamento…</span></div>
+<iframe id="app" title="ESSE EVENTS" allow="clipboard-write; fullscreen; web-share"></iframe>
+<script>
+/* ======================================================================
+   QUI SOTTO, TRA LE VIRGOLETTE, INCOLLA IL LINK DELLA VOSTRA APP
+   (quello che finisce con /exec: Apps Script → Esegui il deployment → Gestisci deployment → URL app web)
+   ====================================================================== */
+var APP = 'INCOLLA_QUI_IL_LINK_DELLA_APP';
+
+(function () {
+  var frame = document.getElementById('app'), splash = document.getElementById('splash'), msg = document.getElementById('msg');
+  var ok = /^https:\/\/script\.google\.com\/.+\/exec$/.test(APP.trim()) || /^file:/.test(APP);
+  if (!ok) { msg.innerHTML = 'Manca il link dell\'app.<br>Apri il file index.html su GitHub e incollalo dove c\'è scritto INCOLLA_QUI_IL_LINK_DELLA_APP.'; return; }
+  var timer = 0;
+  function open(p) {
+    frame.classList.remove('ready'); splash.classList.remove('off'); msg.textContent = 'Caricamento…';
+    frame.src = APP.trim() + (p ? '?p=' + encodeURIComponent(p) : '');
+    clearTimeout(timer);
+    timer = setTimeout(function () { msg.innerHTML = 'Ci mette un po\'… controlla la connessione.<br><a href="' + APP + '">Apri l\'app senza logo</a>'; }, 15000);
+  }
+  frame.addEventListener('load', function () {
+    clearTimeout(timer);
+    setTimeout(function () { frame.classList.add('ready'); splash.classList.add('off'); }, 250);
+  });
+  // l'app chiede "ci sei?" e chiede di cambiare sezione (menu, flusso economico, ingressi)
+  window.addEventListener('message', function (ev) {
+    var d = ev.data || {};
+    if (d.esse === 'hello' && ev.source) ev.source.postMessage({ esse: 'launcher', url: location.href.split('#')[0].split('?')[0] }, '*');
+    if (d.esse === 'go') open(/^[a-z]{0,20}$/.test(d.p || '') ? d.p : '');
+  });
+  open(new URLSearchParams(location.search).get('p') || '');
+})();
+</script>
+</body>
+</html>
